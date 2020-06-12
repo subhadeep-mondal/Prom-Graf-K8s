@@ -1,0 +1,12 @@
+FROM registry.redhat.io/ubi8/ubi:latest
+
+RUN dnf install -y wget && \
+wget https://dl.grafana.com/oss/release/grafana-7.0.3-1.x86_64.rpm && \
+dnf install -y grafana-7.0.3-1.x86_64.rpm 
+
+RUN dnf install -y /usr/sbin/service
+
+RUN service grafana-server start && chkconfig grafana-server on
+
+EXPOSE 3000
+        
