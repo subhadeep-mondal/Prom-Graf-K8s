@@ -1,0 +1,56 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: prometheus-deploy
+  labels:
+    env: monitor
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+       env: monitor
+  template:
+    metadata:
+       name: prometheus-pod
+       labels:
+        env: monitor
+    spec:
+       containers:
+       - image: subhadeep05/prometheus:v1
+         name: prometheus-container
+         ports:
+         - containerPort: 9090
+           name: prometheus-port
+         volumeMounts:
+         - name: prometheus-storage
+           mountPath: /prometheus-2.18.1.linux-amd64/data
+         - name: config-volume
+           #mountPath: /prometheus-2.18.1.linux-amd64/prometheus.yml
+           mountPath: /etc/prometheus/prometheus.yml
+           subPath: prometheus.yml
+       volumes:
+       - name: prometheus-storage
+         persistentVolumeClaim:
+            claimName: prometheus-pvc
+       - name: config-volume
+         configMap:
+            name: prometheus-config
+---
+apiVersion: v1
+kind: Service
+metadata:
+  creationTimestamp: null
+  labels:
+    env: monitor
+  name: prometheus-deploy
+spec:
+  ports:
+  - port: 9090
+    protocol: TCP
+    targetPort: 9090
+    nodePort: 30001
+  selector:
+    env: monitor
+  type: NodePort
+status:
+  loadBalancer: {}
